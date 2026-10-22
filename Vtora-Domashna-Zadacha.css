@@ -1,21 +1,45 @@
-body {
-    background-color: #f0f4f8;
-    font-family: Arial, sans-serif;
-}
-
 h2 {
     color: #0b3c5d;
     text-align: center;
 }
 
 table {
-    background-color: #ffffff;
+    background-color:#310863;
     border-collapse: collapse;
-    box-shadow: 2px 2px 5px gray;
+    box-shadow: 2px 2px 5px #120621;
+    border-radius: 8px;
+    width: 100%;
 }
 
 th {
     color: #ffffff;
     background-color: #1d70b8;
     border-radius: 5px;
+}
+
+body {
+    background-color: #c2a7eb;
+    color: white;
+    padding: 33px;
+    border-radius: 12;
+}
+
+textarea {
+  background-color: #c9c9ff;
+}
+
+button{
+    background-color: #ffd675
+    color: blue;
+    border-radius: 5px;
+}
+
+table:hover {
+    box-shadow: 4px 4px 15px #120621;
+    transition: 0.3s;
+}
+
+button:hover {
+    box-shadow: 2px 2px 8px #120621;
+    transition: 0.3s;
 }
