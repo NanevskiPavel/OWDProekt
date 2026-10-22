@@ -1,0 +1,21 @@
+body {
+    background-color: #f0f4f8;
+    font-family: Arial, sans-serif;
+}
+
+h2 {
+    color: #0b3c5d;
+    text-align: center;
+}
+
+table {
+    background-color: #ffffff;
+    border-collapse: collapse;
+    box-shadow: 2px 2px 5px gray;
+}
+
+th {
+    color: #ffffff;
+    background-color: #1d70b8;
+    border-radius: 5px;
+}
