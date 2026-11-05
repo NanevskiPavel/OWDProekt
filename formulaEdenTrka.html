@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Formula 1</title>
+<style>
+body {
+    font-family: Arial;
+    background-color: black;
+    margin: 20px;
+}
+h1 {
+    color: darkblue;
+}
+table {
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: white;
+}
+th, td {
+    border: 1px solid black;
+    padding: 5px;
+    text-align: left;
+}
+th {
+    background-color: lightblue;
+}
+button {
+    margin-top: 10px;
+    padding: 5px 10px;
+}
+#log {
+    margin-top: 20px;
+    background-color: white;
+    padding: 10px;
+    border: 1px solid black;
+    height: 200px;
+    overflow-y: scroll;
+}
+#winner {
+    margin-top: 10px;
+    font-weight: bold;
+    color: green;
+}
+</style>
+</head>
+<body>
+
+<h1>Formula 1 Trka</h1>
+
+<button id="startBtn" onclick="zapocniTrka()">Zapocni Trka</button>
+<button id="autoBtn" onclick="avtomatskiKrug()">Avtomatsko azuriranje</button>
+<button id="manualBtn" onclick="racenKrug()">Krug po krug</button>
+<div id="winner"></div>
+
+<h2>Vozaci</h2>
+<table id="driverTable">
+    <thead>
+        <tr>
+            <th>Ime</th>
+            <th>Tim</th>
+            <th>Brzina</th>
+            <th>Vestina</th>
+            <th>Vkupno Vreme</th>
+            <th>Gumi</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<h2>Log na Trkata</h2>
+<div id="log"></div>
+
+<script>
+var vozaci = [
+    { ime: "Max", tim: "Red Bull", brzina: 95, vestina: 90, vkupnoVreme: 0, gumi: "Meki", pitNapraveno: false, status: "-" },
+    { ime: "Lewis", tim: "Mercedes", brzina: 92, vestina: 95, vkupnoVreme: 0, gumi: "Meki", pitNapraveno: false, status: "-" },
+    { ime: "Charles", tim: "Ferrari", brzina: 90, vestina: 88, vkupnoVreme: 0, gumi: "Meki", pitNapraveno: false, status: "-" },
+    { ime: "Lando", tim: "McLaren", brzina: 88, vestina: 85, vkupnoVreme: 0, gumi: "Meki", pitNapraveno: false, status: "-" },
+    { ime: "Carlos", tim: "Ferrari", brzina: 89, vestina: 87, vkupnoVreme: 0, gumi: "Meki", pitNapraveno: false, status: "-" },
+    { ime: "George", tim: "Mercedes", brzina: 87, vestina: 84, vkupnoVreme: 0, gumi: "Meki", pitNapraveno: false, status: "-" },
+    { ime: "Sergio", tim: "Red Bull", brzina: 85, vestina: 80, vkupnoVreme: 0, gumi: "Meki", pitNapraveno: false, status: "-" },
+    { ime: "Fernando", tim: "Aston Martin", brzina: 83, vestina: 89, vkupnoVreme: 0, gumi: "Meki", pitNapraveno: false, status: "-" },
+    { ime: "Oscar", tim: "McLaren", brzina: 82, vestina: 78, vkupnoVreme: 0, gumi: "Meki", pitNapraveno: false, status: "-" },
+    { ime: "Yuki", tim: "AlphaTauri", brzina: 78, vestina: 75, vkupnoVreme: 0, gumi: "Meki", pitNapraveno: false, status: "-" }
+];
+
+var tekovenKrug = 0;
+var vkupnoKrugovi = 10;
+var trkaAktivna = false;
+var bezbednosnoVozilo = false;
+var avtomatskiInterval = null;
+
+function prikaziTabela() {
+    var sortirani = vozaci.slice();
+    sortirani.sort(function(a, b) { return a.vkupnoVreme - b.vkupnoVreme; });
+    var telo = document.querySelector("#driverTable tbody");
+    telo.innerHTML = "";
+    for (var i = 0; i < sortirani.length; i++) {
+        var v = sortirani[i];
+        var red = "<tr>";
+        red += "<td>" + v.ime + "</td>";
+        red += "<td>" + v.tim + "</td>";
+        red += "<td>" + v.brzina + "</td>";
+        red += "<td>" + v.vestina + "</td>";
+        red += "<td>" + v.vkupnoVreme.toFixed(1) + "</td>";
+        red += "<td>" + v.gumi + "</td>";
+        red += "<td>" + v.status + "</td>";
+        red += "</tr>";
+        telo.innerHTML += red;
+    }
+}
+
+function zapisi(poraka) {
+    var logDiv = document.getElementById("log");
+    logDiv.innerHTML += "<p>" + poraka + "</p>";
+    logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+function zapocniTrka() {
+    if (trkaAktivna) return;
+    if (avtomatskiInterval) {
+        clearInterval(avtomatskiInterval);
+        avtomatskiInterval = null;
+    }
+    trkaAktivna = true;
+    tekovenKrug = 0;
+    bezbednosnoVozilo = false;
+    document.getElementById("log").innerHTML = "";
+    document.getElementById("winner").innerHTML = "";
+    for (var i = 0; i < vozaci.length; i++) {
+        vozaci[i].vkupnoVreme = 0;
+        vozaci[i].gumi = "Meki";
+        vozaci[i].pitNapraveno = false;
+        vozaci[i].status = "-";
+    }
+    prikaziTabela();
+    zapisi("Trkata zapocna!");
+}
+
+function izvrsiKrug() {
+    if (!trkaAktivna) return false;
+    if (tekovenKrug >= vkupnoKrugovi) {
+        zavrsiTrka();
+        return false;
+    }
+    tekovenKrug++;
+    zapisi("--- Krug " + tekovenKrug + " ---");
+
+    if (Math.random() < 0.1) {
+        bezbednosnoVozilo = true;
+        zapisi("Bezbednosno vozilo izleze na patekata!");
+    } else {
+        bezbednosnoVozilo = false;
+    }
+
+    for (var i = 0; i < vozaci.length; i++) {
+        var v = vozaci[i];
+        v.status = "-";
+
+        var vremeKrug = 100 - (v.brzina * 0.3) - (v.vestina * 0.2);
+
+        if (v.gumi == "Meki") {
+            vremeKrug = vremeKrug * 0.9;
+        } else {
+            vremeKrug = vremeKrug * 1.1;
+        }
+
+        if (bezbednosnoVozilo) {
+            vremeKrug = vremeKrug * 1.5;
+        }
+
+        if (Math.random() < 0.05) {
+            vremeKrug += 15;
+            v.status = "Izletuva";
+            zapisi(v.ime + " izletuva od patekata!");
+        }
+
+        if (!v.pitNapraveno && Math.random() < 0.2) {
+            if (v.gumi == "Meki") {
+                v.gumi = "Tvrdi";
+            } else {
+                v.gumi = "Meki";
+            }
+            v.pitNapraveno = true;
+            vremeKrug += 20;
+            v.status = "Pit Stop";
+            zapisi(v.ime + " vleze vo pit stop. Gumi smeneti vo " + v.gumi);
+        }
+
+        v.vkupnoVreme += vremeKrug;
+    }
+
+    if (bezbednosnoVozilo) {
+        zapisi("Bezbednosnoto vozilo e na patekata ovoj krug.");
+    }
+
+    prikaziTabela();
+    return true;
+}
+
+function avtomatskiKrug() {
+    if (!trkaAktivna) return;
+    if (avtomatskiInterval) return;
+    avtomatskiInterval = setInterval(function() {
+        if (!izvrsiKrug()) {
+            clearInterval(avtomatskiInterval);
+            avtomatskiInterval = null;
+        }
+    }, 1000);
+}
+
+function racenKrug() {
+    if (!trkaAktivna) return;
+    izvrsiKrug();
+}
+
+function zavrsiTrka() {
+    trkaAktivna = false;
+    if (avtomatskiInterval) {
+        clearInterval(avtomatskiInterval);
+        avtomatskiInterval = null;
+    }
+    var najdobar = vozaci[0];
+    for (var i = 1; i < vozaci.length; i++) {
+        if (vozaci[i].vkupnoVreme < najdobar.vkupnoVreme) {
+            najdobar = vozaci[i];
+        }
+    }
+    document.getElementById("winner").innerHTML = "Pobednik: " + najdobar.ime + " (" + najdobar.tim + ") so vkupno vreme " + najdobar.vkupnoVreme.toFixed(1);
+    zapisi("Trkata zavrsi! Pobednik e " + najdobar.ime);
+}
+</script>
+
+</body>
+</html>
