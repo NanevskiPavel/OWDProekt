@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset = "utf-8">
+    <link rel = "stylesheet" type = "text/css" href = "Styles.css">
+
+    <title>Veltra Travel</title>
+  </head>
+  <header>
+    <h1>Veltra Travel</h1>
+    <h2>~:/Planner and Organizer\:~</h2>
+  </header>
+
+<body>
+    <div id="loginView">
+      <button id="loginBtn" class="login">Login</button>
+    </div>
+
+  <dialog id="loginDialog">
+    <form method="dialog">
+      <input id="userInput" placeholder="Username">
+      <input id="passInput" type="password" placeholder="Password">
+      <button>Log in</button>
+    </form>
+
+  </dialog>
+
+      <div id="dashboardView" class="hidden">
+              <p>Welcome, <span id="currUser"></span>!</p>
+      <button id="logout" class="delete">Sign Out</button>
+      <p>
+      </p>
+        <button id="createNew" padding="10px" >Create New Offer</button>
+        
+
+      <dialog id="creationQuary">
+        <form method="dialog">
+      <input id="namePlc" placeholder="Skopje">
+      <input id="cenaPlc" placeholder="x$">
+      <select id="catSelect"></select>
+          <button>Create</button>
+          <button id="closeCreate">Close</button>
+        </form>
+      </dialog>
+        <div id="filters">
+          <select id="filterCat">
+            <option value="">All categories</option>
+          </select>
+
+          <input id="filterMinPrice"  placeholder="Min price">
+          <input id="filterMaxPrice"  placeholder="Max price">
+        </div>
+        <p class="footer">Current Offers:</p>
+        <div id="Offers">
+        </div>
+        <dialog id="expandDialog">
+          <div class="expand-layout">
+            <div class="expand-left">
+              <img id="expandImg" src="" alt="">
+            </div>
+            <div class="expand-right">
+              <h2 id="expandTitle"></h2>
+              <div id="commentsList"></div>
+            
+              <form id="commentForm">
+                <input id="commentInput" placeholder="Add a comment...">
+                <button type="submit">Post</button>
+              </form>
+            </div>
+          </div>
+          <div class="container-right">
+            <button type="button" id="expandClose">Close</button>
+          </div> 
+        </dialog>
+      </div>
+
+
+    <dialog id="blogDialog">
+    <h2 id="blogTitle"></h2>
+    <p id="blogContent" class="blog-text"></p>
+    <div style="text-align: right; margin-top: 20px;">
+    <button type="button" id="closeBlog">Close</button>
+    </div>
+    </dialog>
+
+  <script>
+
+    const categories = ['City', 'Village', 'Ocean'];
+    var dashboardView = document.getElementById("dashboardView");
+    var loginView = document.getElementById("loginView");
+    var dialog = document.getElementById("loginDialog");
+    var loginbutton = document.getElementById("loginBtn");
+   var logoutbtn = document.getElementById("logout"); 
+    var currentPlace=null;
+    var places = [];
+    loginbutton.onclick = function () {
+      dialog.showModal();
+    };
+    logoutbtn.onclick = function(){
+      document.getElementById("feedbackBtn").classList.add("hidden");
+      dashboardView.classList.add("hidden");
+      loginView.classList.remove("hidden");
+    }
+    dialog.querySelector("form").onsubmit = function () { //ne znam kako da napravime login bez backend osven....vaka...
+      var user = document.getElementById("userInput").value;
+      var password = document.getElementById("passInput").value;
+
+      if (user == "Pavel" && password == "pass1") {
+        loginView.classList.add("hidden");
+        dashboardView.classList.remove("hidden");
+        document.getElementById("feedbackBtn").classList.remove("hidden");
+        document.getElementById("currUser").textContent = user;
+        skopje = new Place('Skopje', '333', '33', '333$', categories[0],"", "Skopje e mnogu ubavo mesto koe treba da se poseti pogotovo feit - site sonishta mi se ostvarija tamu!");
+        skopje.printPlace();
+        sofija = new Place('Sofija', '222', '22', '222$', categories[0]);
+        sofija.printPlace();
+      } else {
+        alert("Wrong username or password");
+      }
+    };
+
+    //ovde pochnuva logika za main delot na landingpageot
+
+    var createNewbtn = document.getElementById("createNew");
+    var createNewDialog = document.getElementById("creationQuary");
+    createNewbtn.onclick = function(){
+      creationQuary.showModal();
+    }
+    
+    
+    
+    document.getElementById("closeCreate").onclick = function(){
+      creationQuary.close();
+    }
+
+
+    createNewDialog.querySelector("form").onsubmit = function(){
+      var newname = document.getElementById("namePlc").value;
+      var newcena = document.getElementById("cenaPlc").value;
+      var newcat = document.getElementById("catSelect").value;
+      if(!newcena) newcena = 'Negotiable';
+      if(!newname) return;
+      var p = new Place(newname, '0', '0', newcena, newcat);
+      p.printPlace();
+    }
+var catSelect = document.getElementById("catSelect");
+categories.forEach(function (c) {
+  var opt = document.createElement("option");
+  opt.value = c;
+  opt.textContent = c;
+  catSelect.appendChild(opt);
+});
+
+var filterCat = document.getElementById("filterCat");
+categories.forEach(function (c) {
+  var opt = document.createElement("option");
+  opt.value = c;
+  opt.textContent = c;
+  filterCat.appendChild(opt);
+});
+
+class Place {
+  constructor(ime, likes, dislikes, cena, category, image, description){
+    this.ime = ime;
+    this.likes = likes;
+    this.dislikes = dislikes;
+    this.cena = cena;
+    this.image = image || "placeholder.png";
+    this.priceNumber = parseFloat(String(cena).replace(/[^0-9.]/g, '')) || 0;
+    this.category = category;
+    this.commentari = [];
+    this.hasLiked = false;
+    this.hasDisliked = false;
+    this.description = description || "Theres no current desc. for this place";
+    places.push(this);
+  }
+
+  printPlace(){
+    var currdiv = document.getElementById("Offers");
+
+    var wrapper = document.createElement("div");
+    wrapper.innerHTML = `
+      <table>
+        <tr>
+          <th colspan="2"><strong>OFFER</strong>: ${this.ime}</th>
+
+        </tr>
+        <tr>
+          <td>           <p id="likes-${this.ime}">${this.likes}  </p> <button class="likeBtn">Like</button> 
+          </td>
+          <td rowspan="4"><img src="${this.image}"></img></td>
+        </tr>
+        <tr>
+             <td> <p id="dislikes-${this.ime}">${this.dislikes}</p>          <button class="dislikeBtn">Dislike</button>
+            </td> 
+        </tr>
+        <tr>
+          <td>Price: ${this.cena}</td>
+        </tr>
+        <tr>
+          <td>Category: ${this.category}</td>
+        </tr>
+        <tr>
+          <td><button class="delete">Delete</button></td>
+          <td><button class="expand">Expand</button><p> </p><button class="blog">Open Blog</button></td>
+        </tr>
+      </table>
+    `;
+
+    this.el = wrapper;   
+    this.el.querySelector(".delete").onclick = () => this.el.remove();
+    this.el.querySelector(".expand").onclick = () => {
+      document.getElementById("expandImg").src = this.image;
+      document.getElementById("expandTitle").textContent = this.ime;
+      currentPlace = this;
+      renderirajKomentari(this.commentari);
+      document.getElementById("expandDialog").showModal();
+    }
+
+        this.el.querySelector(".blog").onclick = () => {
+          document.getElementById("blogTitle").textContent = this.ime;
+          document.getElementById("blogContent").textContent = this.description;
+          document.getElementById("blogDialog").showModal();
+        }
+    document.getElementById("closeBlog").onclick = () => document.getElementById("blogDialog").close();
+    currdiv.appendChild(this.el);
+    this.el.querySelector(".likeBtn").onclick = () => {
+          if(this.hasLiked){
+            this.hasLiked = false;
+            this.likes--;
+            document.getElementById(`likes-${this.ime}`).textContent = this.likes;
+          }
+           else if(this.hasDisliked){
+            this.dislikes--;
+            document.getElementById(`dislikes-${this.ime}`).textContent = this.dislikes;
+            this.hasDisliked = false; this.hasLiked = true;
+          }
+          else{
+            this.likes++;
+            this.hasLiked = true;
+            document.getElementById(`likes-${this.ime}`).textContent = this.likes;
+          }
+    };
+
+    this.el.querySelector(".dislikeBtn").onclick = () => {
+          if(this.hasDisliked){
+            this.hasDisliked = false;
+            this.dislikes--;
+            document.getElementById(`dislikes-${this.ime}`).textContent = this.dislikes;
+          }
+          else if(this.hasLiked){
+            this.likes--;
+            document.getElementById(`likes-${this.ime}`).textContent = this.likes;
+            this.hasLiked = false; this.hasDisliked= true;
+          }
+          else{
+            this.dislikes++;
+            this.hasDisliked = true;
+
+            document.getElementById(`dislikes-${this.ime}`).textContent = this.dislikes;
+          }
+    };
+    
+  }
+}
+
+function applyFilters() {
+  var cat = document.getElementById("filterCat").value;
+  var min = parseFloat(document.getElementById("filterMinPrice").value);
+  var max = parseFloat(document.getElementById("filterMaxPrice").value);
+
+  places.forEach(function (p) {
+    var catOk = !cat || p.category === cat;
+    var minOk = isNaN(min) || p.priceNumber >= min;
+    var maxOk = isNaN(max) || p.priceNumber <= max;
+
+    if (catOk && minOk && maxOk) {
+      p.el.classList.remove("hidden");
+    } else {
+      p.el.classList.add("hidden");
+    }
+  });
+}
+
+document.getElementById("filterCat").onchange = applyFilters;
+document.getElementById("filterMinPrice").onchange= applyFilters;
+document.getElementById("filterMaxPrice").onchange = applyFilters;
+document.getElementById("expandClose").onclick = function () {
+  document.getElementById("expandDialog").close();
+};
+
+function renderirajKomentari(comments) {
+  var list = document.getElementById("commentsList");
+  list.innerHTML = "";
+
+  if (comments.length === 0) {
+    var empty = document.createElement("p");
+    empty.textContent = "No comments yet.";
+    list.appendChild(empty);
+    return;
+  }
+
+  comments.forEach(function (text) {
+    var p = document.createElement("p");
+    p.className = "comment";
+    p.textContent = text;
+    list.appendChild(p);
+  });
+}
+document.getElementById("commentForm").onsubmit = function (event) {
+  event.preventDefault();
+  var input = document.getElementById("commentInput");
+  var text = input.value.trim();
+  if (!text || !currentPlace) return;
+
+  currentPlace.commentari.push(text);
+  input.value = "";
+  renderirajKomentari(currentPlace.commentari);
+};
+</script>
+
+</body>
+
+  <footer>
+    <button id="aboutUs" class="footerCls"> About Us </button>  
+    <dialog id="aboutUspopup" class="footer">
+      <p class="footer"> Ova e website napraven za organiziranje i razgleduvanje na lokacii za patuvanje;</p>
+      <p class="footer"> Napraven e od strana na uchenikot Pavel Nanevski 170/2024;</p>
+      <button id ="closeDialog" class="footerCls"> close </button>
+    </dialog>
+
+
+    <button id="feedbackBtn" class="footerCls hidden"> Leave Feedback </button>
+
+    <dialog id="feedbackDialog" class="footer">
+      <h3>Send Impressions</h3>
+      <p class="footer">Let us know what you think of the site!</p>
+      
+      <textarea id="feedbackInput" placeholder="Type here" rows="4"></textarea>
+      
+      <div style="margin-top: 20px;">
+        <button id="submitFeedback" class="footerCls"> submit </button>
+        <button id="closeFeedback" class="footerCls"> close </button>
+      </div>
+    </dialog>
+    <script>
+      var buttonABUS = document.getElementById("aboutUs");
+      var aboutUspopup = document.getElementById("aboutUspopup");
+      buttonABUS.onclick = function(){
+        aboutUspopup.showModal();
+      }
+
+      var closeDialog = document.getElementById("closeDialog");
+      closeDialog.onclick = function(){
+        aboutUspopup.close();
+      }
+
+      document.getElementById("feedbackBtn").onclick = () => {
+        document.getElementById("feedbackDialog").showModal();
+      }
+
+      document.getElementById("closeFeedback").onclick = () => {
+        document.getElementById("feedbackDialog").close();
+      }
+      document.getElementById("submitFeedback").onclick = () =>{
+        alert("Thank you for your submission!");        
+        document.getElementById("feedbackDialog").close();
+      }
+    </script>
+  </footer>
+
+</html>
+
