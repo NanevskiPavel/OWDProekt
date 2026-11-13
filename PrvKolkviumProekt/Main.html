@@ -38,6 +38,7 @@
         <form method="dialog">
       <input id="namePlc" placeholder="Skopje">
       <input id="cenaPlc" placeholder="x$">
+      <input id="imagePlc" placeholder="Image URL">
       <select id="catSelect"></select>
           <button>Create</button>
           <button id="closeCreate">Close</button>
@@ -136,12 +137,13 @@
 
 
     createNewDialog.querySelector("form").onsubmit = function(){
+      var newimage = document.getElementById("imagePlc").value;
       var newname = document.getElementById("namePlc").value;
       var newcena = document.getElementById("cenaPlc").value;
       var newcat = document.getElementById("catSelect").value;
       if(!newcena) newcena = 'Negotiable';
       if(!newname) return;
-      var p = new Place(newname, '0', '0', newcena, newcat);
+      var p = new Place(newname, '0', '0', newcena, newcat, newimage);
       p.printPlace();
     }
 var catSelect = document.getElementById("catSelect");
@@ -233,7 +235,9 @@ class Place {
           }
            else if(this.hasDisliked){
             this.dislikes--;
-            document.getElementById(`dislikes-${this.ime}`).textContent = this.dislikes;
+            document.getElementById(`dislikes-${this.ime}`).textContent = this.dislikes;            
+            this.likes++;
+            document.getElementById(`likes-${this.ime}`).textContent = this.likes;
             this.hasDisliked = false; this.hasLiked = true;
           }
           else{
@@ -250,8 +254,10 @@ class Place {
             document.getElementById(`dislikes-${this.ime}`).textContent = this.dislikes;
           }
           else if(this.hasLiked){
-            this.likes--;
-            document.getElementById(`likes-${this.ime}`).textContent = this.likes;
+             this.dislikes++;
+           this.likes--;
+             document.getElementById(`dislikes-${this.ime}`).textContent = this.dislikes;            
+           document.getElementById(`likes-${this.ime}`).textContent = this.likes;
             this.hasLiked = false; this.hasDisliked= true;
           }
           else{
@@ -326,7 +332,7 @@ document.getElementById("commentForm").onsubmit = function (event) {
     <button id="aboutUs" class="footerCls"> About Us </button>  
     <dialog id="aboutUspopup" class="footer">
       <p class="footer"> Ova e website napraven za organiziranje i razgleduvanje na lokacii za patuvanje;</p>
-      <p class="footer"> Napraven e od strana na uchenikot Pavel Nanevski 170/2024;</p>
+      <p class="footer"> Napraven e od strana na studentot Pavel Nanevski 170/2024;</p>
       <button id ="closeDialog" class="footerCls"> close </button>
     </dialog>
 
