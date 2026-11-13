@@ -38,7 +38,8 @@
         <form method="dialog">
       <input id="namePlc" placeholder="Skopje">
       <input id="cenaPlc" placeholder="x$">
-      <input id="imagePlc" placeholder="Image URL">
+      <button type="button" id="imagePlc">Select Image</button>
+      <input type="file" id="imageInput" class="hidden">
       <select id="catSelect"></select>
           <button>Create</button>
           <button id="closeCreate">Close</button>
@@ -107,7 +108,7 @@
       var user = document.getElementById("userInput").value;
       var password = document.getElementById("passInput").value;
 
-      if (user == "Pavel" && password == "pass1") {
+      if (user == "" && password == "") {
         loginView.classList.add("hidden");
         dashboardView.classList.remove("hidden");
         document.getElementById("feedbackBtn").classList.remove("hidden");
@@ -135,17 +136,26 @@
       creationQuary.close();
     }
 
+      document.getElementById("imagePlc").onclick = () =>{
+        document.getElementById("imageInput").click(); 
+      }
 
+    var chosenImage = ""; 
+
+    document.getElementById("imageInput").onchange = function() {
+      if(this.files[0]) chosenImage = URL.createObjectURL(this.files[0]);
+    }
     createNewDialog.querySelector("form").onsubmit = function(){
-      var newimage = document.getElementById("imagePlc").value;
       var newname = document.getElementById("namePlc").value;
       var newcena = document.getElementById("cenaPlc").value;
       var newcat = document.getElementById("catSelect").value;
       if(!newcena) newcena = 'Negotiable';
       if(!newname) return;
-      var p = new Place(newname, '0', '0', newcena, newcat, newimage);
+      var p = new Place(newname, '0', '0', newcena, newcat, chosenImage);
       p.printPlace();
+      chosenImage = "";
     }
+
 var catSelect = document.getElementById("catSelect");
 categories.forEach(function (c) {
   var opt = document.createElement("option");
